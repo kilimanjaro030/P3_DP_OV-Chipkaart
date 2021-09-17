@@ -8,6 +8,7 @@ import java.sql.Date;
 
 public class AdresDAOPsql implements AdresDAO {
     private Connection conn;
+    private ReizigerDAO rdao;
     public AdresDAOPsql(Connection connection) {
         this.conn = connection;
     }
@@ -20,6 +21,10 @@ public class AdresDAOPsql implements AdresDAO {
             e.printStackTrace();
         }
         return conn;
+    }
+
+    public void setRdao(ReizigerDAO rdao){
+        this.rdao = rdao;
     }
 
     public boolean save(Adres adres) {
@@ -39,16 +44,10 @@ public class AdresDAOPsql implements AdresDAO {
         }
         return result;
     }
-    public boolean update(Adres adres) {
+    public boolean delete(Adres adres) {
         boolean result = false;
-        try(Connection conn = getConnection()){
-            PreparedStatement pt = conn.prepareStatement("UPDATE adres SET voorletters = ?, tussenvoegsel = ?, achternaam = ?, geboortedatum = ?" + " WHERE reiziger_id = '"+ adres.getId() + "'");
-            pt.setInt(1,adres.getId());
-            pt.setString(2, adres.getPostcode());
-            pt.setString(3, adres.getHuisnummer());
-            pt.setString(4, adres.getStraat());
-            pt.setString(5, adres.getWoonplaats());
-            pt.setInt(6, findByReiziger(adres.getReiziger()).getId());
+        try (Connection conn = getConnection()) {
+            PreparedStatement pt = conn.prepareStatement("DELETE from adres WHERE adres_id = '" + adres.getId() + "'");
             pt.executeUpdate();
             result = true;
         } catch (SQLException sql) {
@@ -56,8 +55,22 @@ public class AdresDAOPsql implements AdresDAO {
         }
         return result;
     }
-//    public boolean delete(Adres adres) {
-//    }
+    public boolean update(Adres adres) {
+        boolean result = false;
+        try(Connection conn = getConnection()){
+            PreparedStatement pt = conn.prepareStatement("UPDATE adres SET postcode = ?, huisnummer = ?, straat = ?, woonplaats = ?" + " WHERE adres_id = '"+ adres.getId() + "'");
+            pt.setString(1, adres.getPostcode());
+            pt.setString(2, adres.getHuisnummer());
+            pt.setString(3, adres.getStraat());
+            pt.setString(4, adres.getWoonplaats());
+
+            pt.executeUpdate();
+            result = true;
+        } catch (SQLException sql) {
+            sql.printStackTrace();
+        }
+        return result;
+    }
     public Adres findByReiziger(Reiziger reiziger){
         Adres adres = null;
         String query = "SELECT adres_id, postcode, huisnummer, straat, woonplaats FROM adres WHERE reiziger_id = '"+ reiziger.getId() + "'";
@@ -89,12 +102,18 @@ public class AdresDAOPsql implements AdresDAO {
                 String huisnummer = result.getString(3);
                 String straat = result.getString(4);
                 String woonplaats = result.getString(5);
+                int reiziger_id = result.getInt(6);
 
-                results.add(new Adres (Aid,postcode,huisnummer,straat,woonplaats));
+                Adres adres = new Adres (Aid,postcode,huisnummer,straat,woonplaats);
+                adres.setReiziger(rdao.findById(reiziger_id));
+
+                results.add(adres);
+
             }
         } catch (SQLException sql) {
             sql.printStackTrace();
         }
         return results;
     }
+
 }

@@ -24,9 +24,7 @@ public class Adres {
         return id;
     }
 
-    public int getReizigerID(){
-        return reiziger.getId();
-    }
+
 
     public void setId(int id) {
         this.id = id;
@@ -77,7 +75,11 @@ public class Adres {
     }
 
     public String toString() {
-        String s = "ID: " + getId() + " Postcode: " + getPostcode() + " Huisnummer: " + getHuisnummer() + " Straat: " + getWoonplaats() + " Woonplaats: " + getWoonplaats();
-        return s;
+        if(reiziger != null){
+        return reiziger.toString() + " ID: " + getId() + " Postcode: " + getPostcode() + " Huisnummer: " + getHuisnummer() + " Straat: " + getWoonplaats() + " Woonplaats: " + getWoonplaats();
+        }else{
+            return " ID: " + getId() + " Postcode: " + getPostcode() + " Huisnummer: " + getHuisnummer() + " Straat: " + getWoonplaats() + " Woonplaats: " + getWoonplaats();
+        }
+
     }
 }

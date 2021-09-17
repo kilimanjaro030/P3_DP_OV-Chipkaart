@@ -15,7 +15,7 @@ public class Main {
         testReizigerDAO(rdao);
         closeConnection(getConnection(connection));
         AdresDAO adao = new AdresDAOPsql(getConnection(connection));
-        testAdresDAO(adao);
+        testAdresDAO(adao,rdao);
     }
 
     private static Connection getConnection(Connection connection) throws SQLException{
@@ -61,15 +61,9 @@ public class Main {
         // verwijder reiziger
         System.out.println("\n---------- verwijder reiziger -------------");
         System.out.println();
-        String gebdatum = "1993-03-14";
-        Reiziger hans = new Reiziger(78, "h", "", "boer", java.sql.Date.valueOf(gebdatum));
-        System.out.print("[Test] Eerst " + reizigers.size() + " reizigers, na ReizigerDAO.save() ");
-        rdao.save(hans);
-        reizigers = rdao.findAll();
-        System.out.println(reizigers.size() + " reizigers\n");
 
         System.out.print("[Test] Eerst " + reizigers.size() + " reizigers, na ReizigerDAO.save() ");
-        rdao.delete(hans);
+        rdao.delete(sietske);
         reizigers = rdao.findAll();
         System.out.println(reizigers.size() + " reizigers\n");
 
@@ -96,7 +90,8 @@ public class Main {
         }
     }
 
-    private static void testAdresDAO(AdresDAO adao) throws SQLException {
+    private static void testAdresDAO(AdresDAO adao, ReizigerDAO rdao) throws SQLException {
+        adao.setRdao(rdao);
         // alle Adressen op uit de database
         System.out.println("\n---------- alle Adressen op uit de database -------------");
         System.out.println();
@@ -112,12 +107,38 @@ public class Main {
         System.out.println();
 
         String mehmetBD = "1999-11-10";
-        Reiziger mehmet = new Reiziger(77, "M.A", "", "Bayram", java.sql.Date.valueOf(mehmetBD));
+        Reiziger mehmet = new Reiziger(79, "M.A", "", "Bayram", java.sql.Date.valueOf(mehmetBD));
+        rdao.save(mehmet);
+        System.out.println("Eerst " + adressen.size() + " adressen, na adao.save() ");
         Adres Padualaan = new Adres(12,"3535SB","31","Padualaan","Utrecht");
+
         Padualaan.setReiziger(mehmet);
-        adressen = adao.findAll();
-        System.out.println(adressen.size() + " reizigers reiziger toegevoegd.\n");
         adao.save(Padualaan);
+        adressen = adao.findAll();
+        System.out.println(adressen.size() + " adressen.\n");
+
+        System.out.println("\n---------- update adres -------------");
+        System.out.println();
+        System.out.println("Padualaan voor update:"  );
+        adressen = adao.findAll();
+        for(Adres adres : adressen){
+            System.out.println(adres);
+        }
+        Padualaan = new Adres(12, "3535SB", "69", "Padualaan", "Utrecht");
+        adao.update(Padualaan);
+        System.out.println();
+        System.out.println("Padualaan na update:");
+
+        adressen = adao.findAll();
+
+        for(Adres adres: adressen){
+            System.out.println(adres);
+        }
+
+        System.out.println();
+
+
+
 
         System.out.println("\n---------- FindByReiziger -------------");
         System.out.println();
@@ -125,5 +146,16 @@ public class Main {
         Reiziger Hans = new Reiziger(5,"H.","","Klaasen",java.sql.Date.valueOf(hansBD));
         Adres add = adao.findByReiziger(Hans);
         System.out.println(add);
+
+        System.out.println("\n---------- delete adres -------------");
+        adressen = adao.findAll();
+        System.out.println("Aantal adressen voor delete = " + adressen.size());
+        adao.delete(Padualaan);
+        adressen = adao.findAll();
+        System.out.println("Aantal adressen na delete = " + adressen.size());
+
+        rdao.delete(mehmet);
+
+
     }
 }
